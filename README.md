@@ -1,4 +1,4 @@
-# Bot de Empregos do Discord para Net-Empregos
+# Bot de Net-Empregos para o Discord 
 
 Um bot do Discord que monitoriza o feed RSS do Net-Empregos de hora a hora e publica automaticamente novas ofertas de emprego num canal dedicado do Discord. O bot filtra empregos por localização (Porto, Maia, Valongo, Braga, Matosinhos, Trofa, Paredes, Vila Nova de Gaia, Leça da Palmeira e Gondomar) e garante que não há publicações duplicadas.
 
