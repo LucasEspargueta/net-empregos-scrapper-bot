@@ -1,4 +1,4 @@
-# Bot de Net-Empregos para o Discord 
+# Bot de Empregos do Discord para Net-Empregos
 
 Um bot do Discord que monitoriza o feed RSS do Net-Empregos de hora a hora e publica automaticamente novas ofertas de emprego num canal dedicado do Discord. O bot filtra empregos por localização (Porto, Maia, Valongo, Braga, Matosinhos, Trofa, Paredes, Vila Nova de Gaia, Leça da Palmeira e Gondomar) e garante que não há publicações duplicadas.
 
@@ -7,6 +7,7 @@ Um bot do Discord que monitoriza o feed RSS do Net-Empregos de hora a hora e pub
 - 🔄 Verifica automaticamente o feed RSS de hora a hora
 - 📍 Filtra empregos por localizações específicas na região do Porto/Braga
 - 🚫 Previne publicações duplicadas usando armazenamento persistente
+- ⛔ Filtra empregos indesejados através de lista de exclusão
 - 📊 Mensagens embed ricas com título do emprego, empresa e ligação
 - 💾 Armazena empregos enviados num ficheiro JSON local
 
@@ -49,12 +50,22 @@ npm install
 
 ### 4. Configurar o Bot
 
-1. Cria um ficheiro `.env`
+Abre `bot.js` e substitui os seguintes valores:
+
+```javascript
+CHANNEL_ID: 'O_TEU_ID_DE_CANAL_AQUI', // Substitui pelo ID do teu canal do Discord
+BOT_TOKEN: 'O_TEU_TOKEN_DE_BOT_AQUI' // Substitui pelo token do teu bot do Discord
+```
+
+Alternativamente, podes usar variáveis de ambiente (recomendado para produção):
+
+1. Cria um ficheiro `.env` baseado em `.env.example`
 2. Adiciona as tuas credenciais:
    ```
    DISCORD_BOT_TOKEN=o_teu_token_de_bot_aqui
    DISCORD_CHANNEL_ID=o_teu_id_de_canal_aqui
    ```
+3. Modifica `bot.js` para usar estas variáveis de ambiente
 
 ### 5. Executar o Bot
 
@@ -72,8 +83,9 @@ npm run dev
 
 1. **Monitorização do RSS**: O bot obtém o feed RSS do Net-Empregos de hora a hora
 2. **Filtragem por Localização**: Cada emprego é verificado quanto a menções das localizações desejadas
-3. **Prevenção de Duplicados**: Os empregos são rastreados por um ID único (título + ligação) e armazenados em `sent_jobs.json`
-4. **Publicação no Discord**: Novos empregos que correspondam aos critérios são publicados como embeds ricos com:
+3. **Filtragem por Exclusão**: Empregos que contenham palavras-chave indesejadas são automaticamente ignorados
+4. **Prevenção de Duplicados**: Os empregos são rastreados por um ID único (título + ligação) e armazenados em `sent_jobs.json`
+5. **Publicação no Discord**: Novos empregos que correspondam aos critérios são publicados como embeds ricos com:
    - Título do emprego (como ligação clicável)
    - Nome da empresa (do dc:creator)
    - Ligação direta para a oferta de emprego
@@ -107,6 +119,21 @@ const LOCATIONS = [
 ];
 ```
 
+### Adicionar/Remover Exclusões
+
+Em `bot.js`, modifica o array `EXCLUSIONS` para filtrar empregos que não te interessam:
+
+```javascript
+const EXCLUSIONS = [
+    'Amassador',
+    'Customer Support',
+    'Lojista',
+    // Adiciona ou remove palavras-chave de exclusão aqui
+];
+```
+
+O bot irá ignorar qualquer emprego que contenha estas palavras no título ou descrição.
+
 ### Personalizar Aparência do Embed
 
 No método `checkForNewJobs`, modifica o `EmbedBuilder`:
@@ -117,6 +144,18 @@ const embed = new EmbedBuilder()
     .setTitle(title)
     .setURL(link)
     // Personaliza campos, rodapé, miniatura, etc.
+```
+
+## Estrutura de Ficheiros
+
+```
+discord-job-bot/
+├── bot.js              # Código principal do bot
+├── package.json        # Dependências e scripts
+├── .env.example        # Template de variáveis de ambiente
+├── .gitignore         # Regras de ignorar do Git
+├── README.md          # Este ficheiro
+└── sent_jobs.json     # Auto-gerado: rastreia empregos enviados
 ```
 
 ## Resolução de Problemas
@@ -153,4 +192,4 @@ Para questões relacionadas com:
 
 ## Licença
 
-MIT
+ISC

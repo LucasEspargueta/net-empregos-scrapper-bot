@@ -9,7 +9,7 @@ require('dotenv').config();
 // Configuração
 const CONFIG = {
     RSS_URL: 'https://www.net-empregos.com/rssfeed.asp',
-    CHECK_INTERVAL: '0 * * * *', // Todas as horas, ao minuto 0
+    CHECK_INTERVAL: '*/30 * * * *', // Todas as horas, ao minuto 0
     SENT_JOBS_FILE: path.join(__dirname, 'sent_jobs.json'),
     CHANNEL_ID: process.env.CHANNEL_ID, // ID do canal de Discord
     BOT_TOKEN: process.env.BOT_TOKEN // Token do bot do Discord
@@ -29,6 +29,72 @@ const LOCATIONS = [
     'Gondomar'
 ];
 
+// Palavras-chave de exclusão - empregos a ignorar
+const EXCLUSIONS = [
+    'Amassador',
+    'Customer Support',
+    'Lojista',
+    'Pizzeiro',
+    'Empilhador',
+    'Carpinteiro',
+    'Motorista',
+    'Sales',
+    'Soldador',
+    'Veterinário',
+    'Civil',
+    'Cantoneiro',
+    'Rececionista',
+    'Cozinheiro',
+    'Lacador',
+    'Dentária',
+    'Dentário',
+    'Veterinária',
+    'Serralheiro',
+    'Call Center',
+    'Eletricista',
+    'Imobiliário',
+    'Desenhador',
+	'Francês',
+	'Neerlandês',
+	'Fisioterapeuta',
+	'Psicólogo',
+	'Psicóloga',
+	'Restauração',
+	'Imobiliario',
+	'Veterinario',
+	'Veterinaria',
+	'Dentaria',
+	'Dentario',
+	'Frances',
+	'Neerlandes',
+	'Psicologo',
+	'Psicologa',
+	'Futebol',
+	'Yoga',
+	'balcão',
+	'balcao',
+	'Trainer',
+	'Educador',
+	'Educadora',
+	'Pintor',
+	'Vigilante',
+	'Chapeiro',
+	'Loja',
+	'Marketing',
+	'Contabilista',
+	'Contabilidade',
+	'AVAC',
+	'Pesados',
+	'Mecanico',
+	'Arquiteto',
+	'Canalizador',
+	'Trolha',
+	'Fitness',
+	'Manicure',
+	'Otorrino'
+	
+];
+
 class JobBot {
     constructor() {
         this.client = new Client({
@@ -46,6 +112,7 @@ class JobBot {
             console.log(`✅ Bot iniciado como ${this.client.user.tag}`);
             console.log(`📍 A monitorizar o feed RSS de hora a hora`);
             console.log(`🎯 A filtrar pelas localizações: ${LOCATIONS.join(', ')}`);
+            console.log(`🚫 A excluir empregos com: ${EXCLUSIONS.join(', ')}`);
         });
 
         await this.client.login(CONFIG.BOT_TOKEN);
@@ -111,6 +178,14 @@ class JobBot {
         );
     }
 
+    containsExclusion(text) {
+        if (!text) return false;
+        const upperText = text.toUpperCase();
+        return EXCLUSIONS.some(exclusion => 
+            upperText.includes(exclusion.toUpperCase())
+        );
+    }
+
     generateJobId(item) {
         // Cria um ID único baseado no título e link
         const title = item.title?.[0] || '';
@@ -143,6 +218,12 @@ class JobBot {
                     continue;
                 }
 
+                // Verifica se o emprego contém palavras de exclusão
+                if (this.containsExclusion(fullText)) {
+                    console.log(`⏭️  Ignorado (exclusão): ${title}`);
+                    continue;
+                }
+
                 // Gera um ID único para este emprego
                 const jobId = this.generateJobId(item);
 
@@ -158,7 +239,7 @@ class JobBot {
                     .setURL(link)
                     .addFields(
                         { name: '🏢 Empresa', value: company, inline: false },
-                        { name: '🔗 Link', value: `[Ver Emprego](${link})`, inline: false }
+                        { name: '🔗 Ligação', value: `[Ver Emprego](${link})`, inline: false }
                     )
                     .setTimestamp()
                     .setFooter({ text: 'Alerta de Emprego Net-Empregos' });
